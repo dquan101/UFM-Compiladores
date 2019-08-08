@@ -229,7 +229,7 @@ def validateGeneral(cadena, num):
         print("last pos: ", pos)
 
     return match
-    
+
 switcher = {
     1: "valida1",
     2: "valida2",
