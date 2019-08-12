@@ -23,5 +23,3 @@ try:
 		print(acepta(dfa, 0, {2}, test))
 except KeyError:
 	print(False)
-
-#prueba
