@@ -16,11 +16,17 @@ def acepta(transicion, inicial, acepta, s):
 	return estado in acepta
 
 try:
-	test = '066AFA'
+	test = input("Ingrese una cadena de caracteres: ")
+	tipo = ""
 	if test[1] == 'x':
 		print(acepta(hex_dfa, 0, {4}, test))
+		tipo = "hexa"
 	else:
-		print(acepta(dfa, 0, {2}, test))
+		result = acepta(dfa, 0, {2}, test) 
+		print(result)
+		tipo = "int"
+	if result == True:		
+		print("<type>", tipo, "  <value>", test)
 except KeyError:
 	print(False)
 
