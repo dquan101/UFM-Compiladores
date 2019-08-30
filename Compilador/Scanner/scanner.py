@@ -247,6 +247,7 @@ def generate(Rs):
     R = ""
     conte = 0 #Revisa si ya existe un elemento para partir
     ops = []
+    
     print("RS: ", Rs)
     for i in range(len(Rs)):        
         Rs[i][0] = Rs[i][0][1:len(Rs[i][0])-1] #Eliminando los caracteres sepadores del inicio y el final
@@ -259,9 +260,29 @@ def generate(Rs):
                 #print("OP:", op)
                 if op in Rs[i][0]:
                     ops = Rs[i][0].split(op)
-                    if ops:
-                        print(i, ops)
-                        
+            if ops:
+                print(i, ops)
+                d = {}
+                for op in ops:                    
+                    try:        
+                        int(op)                
+                        if 48 <= ord(op) <= 57: #Es int
+                            for j in range(ord(ops[0]), ord(ops[1])+1):
+                                d[j-48] = i
+                            continue
+                    except ValueError:
+                        d[op] = i+1
+            
+                #d = { x:x+1 for x in d}
+                
+                print(i, "D:",d)
+                dfa[i] = d
+        if i == len(Rs)-1:
+            d = dict.fromkeys(d, d[1]+1)
+            dfa[i] = d
+    return dfa
+                
+
                 
 
 import os
