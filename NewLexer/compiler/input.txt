@@ -11,11 +11,7 @@ class Program
         int ern3t;
         int array;
         boolean thisfortrue;
-<<<<<<< HEAD
         array[0xa] += IF();
         String = 0
-=======
-        array[0xa] >= 0xA;
->>>>>>> 130f64d11032b62cbef0bb3b61cc8a903b379405
     }
 }
