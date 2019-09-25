@@ -53,7 +53,7 @@ def type(listt, types):
 					lists[1] = x
 					matrix.append(lists)
 			except:
-				pass
+				print(listt)
 			try:
 				if accepts(ID, 0, {1}, x):
 					lists[0] = 'ID'
