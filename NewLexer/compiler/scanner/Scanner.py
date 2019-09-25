@@ -48,14 +48,14 @@ def type(listt, types):
 			matrix.append(lists)
 		else:
 			try:
-				if accepts(HFA, 0, {2, 3, 4, 7, 8, 9, 0}, x) in (2, 7):
+				if accepts(HFA, 0, {2, 3, 4, 7, 8, 9, 1}, x) in (2, 7):
 					if listt[y-1] == '-':
 						x = '-' + x
 					lists[0] = 'hexadecimal'
 					lists[1] = x
 					matrix.append(lists)
 					aceptado = True
-				if accepts(HFA, 0, {2, 3, 4, 7, 8, 9, 0}, x) in (3, 4, 8, 9):
+				if accepts(HFA, 0, {2, 3, 4, 7, 8, 9, 1}, x) in (3, 4, 8, 9):
 					if listt[y-1] == '-':
 						x = '-' + x
 					if listt[y+1] == '.':
@@ -92,9 +92,14 @@ def type(listt, types):
 				pass
 			try:
 				if accepts(OFA, 0, {1}, x):
-					lists[0] = 'Operator'
-					lists[1] = x
-					matrix.append(lists)
+					if listt[y+1] == '=':
+						x = x + '='
+					if listt[y-1] in ('-', '+', '<', '>'):
+						pass
+					else:
+						lists[0] = 'Operator'
+						lists[1] = x
+						matrix.append(lists)
 					aceptado = True
 			except:
 				pass
@@ -114,9 +119,13 @@ def type(listt, types):
 			except:
 				pass
 			if aceptado == False:
+				if x == '0':
+					lists[0] = 'Decimal'
+					lists[1] = x
 				#print("Unexpected token: ", x)
-				lists[0] = 'Unexpected token'
-				lists[1] = x
+				else:
+					lists[0] = 'Unexpected token'
+					lists[1] = x
 				matrix.append(lists)
 		y += 1
 	return matrix 
