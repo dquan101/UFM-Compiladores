@@ -1,7 +1,7 @@
 class Program
 {
 
-    int IF(int val)
+    int IF(int val, int alv)
     {
         return (val+1);
     }
@@ -12,5 +12,6 @@ class Program
         int array;
         boolean thisfortrue;
         array[0xa] += IF();
+        String = 0
     }
 }
