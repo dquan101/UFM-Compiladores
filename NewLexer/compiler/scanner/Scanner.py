@@ -124,7 +124,7 @@ def type(listt, types):
 				pass
 			if aceptado == False:
 				if x == '0':
-					lists[0] = 'Decimal'
+					lists[0] = 'decimal'
 					lists[1] = x
 				#print("Unexpected token: ", x)
 				else:
