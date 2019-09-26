@@ -1,0 +1,4 @@
+['keywords', 'class']
+['ID', 'Program']
+['Delimiter', '{']
+['Delimiter', '}']
