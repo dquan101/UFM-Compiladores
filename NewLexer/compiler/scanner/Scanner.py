@@ -1,5 +1,5 @@
 import shlex
-import sys, getopt, argparse
+import sys, getopt, argparse, os
 
 HFA = {0:{'-':5, '0':1, '1':3, '2':3, '3':3, '4':3, '5':3, '6':3, '7':3, '8':3, '9':3},
 		1:{'x':2},
@@ -19,13 +19,15 @@ SFA = {0:{34:1},
 	   2:{39:1, 34:1, 92:1, 110:1, 116:1},
 	   3:{}}
 
-CFA = {0:{'(':1, ')':1, '[':1, ']':1, '{':1, '}':1},
+
+
+CFA = {0:{'(':1, ')':1, '[':1, ']':1, '{':1, '}':1, ',':1, ';':1},
 	   1:{}}
 
 EFA = {0:{';':1},
 	   1:{}}
 
-OFA = {0:{'<':2, '=':1, '>':2, '+':2, '-':2, '/':1, '*':1, '%':1, '^':1,},
+OFA = {0:{'<':2, '=':1, '>':2, '+':2, '-':2, '/':1, '*':1, '%':1, '^':1, '!':2},
 	   1:{},
 	   2:{'=':1, '':1}}
 
@@ -82,6 +84,7 @@ def type(listt, types):
 					aceptado = True
 			except:
 				pass
+			""" Try that set End of instruction as type
 			try:
 				if accepts(EFA, 0, {1}, x):
 					lists[0] = 'End of instruction'
@@ -90,6 +93,7 @@ def type(listt, types):
 					aceptado = True
 			except:
 				pass
+			"""
 			try:
 				if accepts(OFA, 0, {1}, x):
 					if listt[y+1] == '=':
@@ -192,7 +196,7 @@ ap.add_argument("file", help="Inputfile")
 ap.add_argument("-debug", required=False, help="<stage>: [scan, parse, ast, semantic, irt, codegen] ")
 args = vars(ap.parse_args())
 
-
+tofile = []
 keywords = {'keywords':['boolean', 'break', 'callout', 'class', 'continue', 'else', 'false', 'for', 'if', 'int', 'return', 'void', 'true', 'print', 'String']}
 newlist = tokenize("../"+str(args["file"]))
 #print(newlist)
@@ -201,7 +205,22 @@ if args["debug"] == None:
 	for element in newlist:
 		if element[0] == "Unexpected token":
 			print(element)
+		elif element[0] != "Unexpected token":
+			tofile.append(str(element))
 else:
 	for element in newlist:
 		if element[0] != "Unexpected token":
 			print(element)
+			tofile.append(str(element))
+
+#print(tofile)
+print(os.getcwd())
+#outF = open("../parser/token.txt", "w")
+#outF.writelines(tofile)
+#outF.close()
+
+outF = open("../parser/token.txt", "w")
+for line in tofile:
+	outF.write(line)
+	outF.write("\n")
+outF.close()
