@@ -35,7 +35,7 @@ class Grammar:
 
     def popToken(self):
         popped = self.tokens.pop(0)
-        print("Popped:", popped)
+        #print("Popped:", popped)
 
     def printExpectedToken(self, expected):
         print("Expected Token: "+expected+", found ", self.tokens[0], "instead.")
@@ -289,8 +289,10 @@ class Grammar:
                             self.popToken()
                         else:
                             self.printExpectedToken("['Delimiter',')']")
+                    elif self.isexpected(self.tokens[0], "Delimiter", ")"):
+                        self.popToken()
                     else:
-                        self.printExpectedToken("['Delimiter',',']")
+                        self.printExpectedToken("['Delimiter',')']")
                 else:
                     self.printExpectedToken("<string_literal>")
             else:
@@ -316,7 +318,7 @@ class Grammar:
         else:
             self.printExpectedToken("<ID>")
 
-    def syntaxExpr(self):        
+    def syntaxExpr(self):                
         if (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
             #is method_call                       
             self.syntaxMethod_call()
@@ -345,7 +347,7 @@ class Grammar:
         elif self.isBinOp(self.tokens[1]):
             #is expr alone
             self.popToken()
-            self.syntaxExpr()
+            
             if self.isBinOp(self.tokens[0]):
                 self.popToken()
                 self.syntaxExpr()
@@ -416,7 +418,7 @@ class Grammar:
         return self.isDecimalLiteral(token) or self.isHexLiteral(token)
 
     def isDecimalLiteral(self, token):
-        return self.getType(token) == "Decimal"
+        return self.getType(token) == "decimal"
 
     def isHexLiteral(self, token):
         return self.getType(token) == "hexadecimal"
