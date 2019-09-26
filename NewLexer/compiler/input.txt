@@ -1,17 +1,4 @@
 class Program
 {
 
-    int IF(int val, int alv)
-    {
-        return (val+1);
-    }
-
-    void main()
-    {
-        int ern3t;
-        int array;
-        boolean thisfortrue;
-        array[0xa] += IF();
-        String = 0
-    }
 }

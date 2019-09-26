@@ -82,7 +82,14 @@ if args["target"] == "scan":
         print("Parametro -opt <opt_stage>: [constant, algebraic] ")
         print("Parametro -debug <stage>: [scan, parse, ast, semantic, irt, codegen] ")
         print("")
-
+elif args["target"] == "parse":
+    if args["debug"] != None:
+        print("")
+        print("debug argument not accepted for -target scan")
+        print()
+    else:
+        subprocess.call(["python", "Scanner.py", args["file"]], cwd="scanner")
+        subprocess.call(["python", "Parser.py", ], cwd="parser")
 else:
     print("")
     print("Bad argument for flag -target")
