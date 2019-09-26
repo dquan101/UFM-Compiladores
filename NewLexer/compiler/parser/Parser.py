@@ -34,7 +34,8 @@ class Grammar:
         return token[1]
 
     def popToken(self):
-        self.tokens.pop(0)
+        popped = self.tokens.pop(0)
+        print("Popped:", popped)
 
     def printExpectedToken(self, expected):
         print("Expected Token: "+expected+", found ", self.tokens[0], "instead.")
@@ -57,10 +58,13 @@ class Grammar:
                 if self.isexpected(self.tokens[0], "Delimiter", "{"):
                     self.popToken()  
                     if not self.isexpected(self.tokens[0], "Delimiter", "}"):  
-                        while self.isexpected(self.tokens[2], "Delimiter", "["):
-                            self.syntaxField_dec()
-                        while self.isexpected(self.tokens[2], "Delimiter", "("):
-                            self.syntaxMethod_dec()
+                        try:
+                            while self.isexpected(self.tokens[2], "Delimiter", "["):
+                                self.syntaxField_dec()
+                            while self.isexpected(self.tokens[2], "Delimiter", "("):
+                                self.syntaxMethod_dec()
+                        except IndexError:
+                            pass
                     if self.isexpected(self.tokens[0], "Delimiter", "}"):
                         self.popToken()
                         print("Program OK")
@@ -103,30 +107,36 @@ class Grammar:
             self.printExpectedToken("<type>")
 
 
-    def syntaxMethod_dec(self):        
+    def syntaxMethod_dec(self): #Could fail due to while statement        
         if self.istype(self.tokens[0]) or self.isexpected(self.tokens[0], "keywords", "void"):
             self.popToken()    
             if self.isID(self.tokens[0]):
                 self.popToken()    
                 if self.isexpected(self.tokens[0], "Delimiter", "("):
                     self.popToken()    
-                    while True:
-                        if self.istype(self.tokens[0]):
-                            self.popToken()    
-                            if self.isID(self.tokens[0]):
+                    if self.istype(self.tokens[0]):
+                        while self.istype(self.tokens[0]):
+                            if self.istype(self.tokens[0]):
                                 self.popToken()    
-                                if self.isexpected(self.tokens[0], "Delimiter", ","):
+                                if self.isID(self.tokens[0]):
                                     self.popToken()    
-                                    continue
-                                elif self.isexpected(self.tokens[0], "Delimiter", ")"):
-                                    self.popToken()    
-                                    self.syntaxBlock()
+                                    if self.isexpected(self.tokens[0], "Delimiter", ","):
+                                        self.popToken()    
+                                        continue
+                                    elif self.isexpected(self.tokens[0], "Delimiter", ")"):
+                                        self.popToken()    
+                                        self.syntaxBlock()
+                                    else:
+                                        self.printExpectedToken("['Delimiter', ')']")
                                 else:
-                                    self.printExpectedToken("['Delimiter', ')']")
+                                    self.printExpectedToken("<ID>")
                             else:
-                                self.printExpectedToken("<ID>")
-                        else:
-                            self.printExpectedToken("<type>")
+                                self.printExpectedToken("<type>")
+                    elif self.isexpected(self.tokens[0], "Delimiter", ")"):
+                        self.popToken()
+                        self.syntaxBlock()
+                    else:
+                        self.printExpectedToken("['Delimiter',')']")
                 else:
                     self.printExpectedToken("['Delimiter', '(']")
             else:
@@ -167,7 +177,7 @@ class Grammar:
     """
     def syntaxStatement(self):
         while not self.isexpected(self.tokens[0], "Delimiter", "}"):
-            if self.isexpected(self.tokens[1], "Delimiter", "(") or self.isexpected(self.tokens[0], "keywords", "callout"):
+            if (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
                 #is method_call
                 self.syntaxMethod_call()
                 if self.isexpected(self.tokens[0], "Delimiter", ";"):
@@ -177,10 +187,15 @@ class Grammar:
             elif self.isID(self.tokens[0]) or (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "[")):
                 #is location
                 self.syntaxLocation()
-                if self.isexpected(self.tokens[0], "Delimiter", ";"):
+                if self.isAssignOp(self.tokens[0]):
                     self.popToken()
+                    self.syntaxExpr()
+                    if self.isexpected(self.tokens[0], "Delimiter", ";"):
+                        self.popToken()
+                    else:
+                        self.printExpectedToken("['Delimiter',';']")
                 else:
-                    self.printExpectedToken("['Delimiter',';']")
+                    self.printExpectedToken("<assig_op>")
             elif self.isexpected(self.tokens[0], "keywords", "if"):
                 #is if
                 self.popToken()
@@ -248,10 +263,11 @@ class Grammar:
             self.popToken()
             if self.isexpected(self.tokens[0], "Delimiter", "("):
                 self.popToken()
-                self.syntaxExpr()
-                while self.isexpected(self.tokens[0], "Delimiter", ","):
-                    self.popToken()
+                if not self.isexpected(self.tokens[0], "Delimiter", ")"):
                     self.syntaxExpr()
+                    while self.isexpected(self.tokens[0], "Delimiter", ","):
+                        self.popToken()
+                        self.syntaxExpr()
                 if self.isexpected(self.tokens[0], "Delimiter", ")"):
                     self.popToken()
                 else:
@@ -302,10 +318,11 @@ class Grammar:
 
     def syntaxExpr(self):        
         if (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
-            #is method_call            
+            #is method_call                       
             self.syntaxMethod_call()
-        elif self.isID(self.tokens[0]) or (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "[")):
+        elif (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", ")")) or (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "[")):
             #is location
+            print("is location")
             self.syntaxLocation()
         elif self.isLiteral(self.tokens[0]):
             self.popToken()
@@ -327,6 +344,7 @@ class Grammar:
                 self.printExpectedToken("['Delimiter',')']")
         elif self.isBinOp(self.tokens[1]):
             #is expr alone
+            self.popToken()
             self.syntaxExpr()
             if self.isBinOp(self.tokens[0]):
                 self.popToken()
@@ -334,14 +352,19 @@ class Grammar:
             else:
                 self.printExpectedToken("<bin_op>")
         else:
-            self.printExpectedToken("<expr>")
-        
+            self.printExpectedToken("<expr>")            
 
     def syntaxCallout_arg(self):        
         if self.isStringLiteral(self.tokens[0]):
             self.popToken()
         else:
             self.syntaxExpr()
+
+    def syntaxBinOp(self):
+        if self.isBinOp(self.tokens[0]):
+            self.popToken()
+        else:
+            self.printExpectedToken("<bin_op>")
 
     def isAssignOp(self, token):
         return self.isexpected(token, "Operator", "=") or self.isexpected(token, "Operator", "+=") or self.isexpected(token, "Operator", "-=")
@@ -410,7 +433,5 @@ class Grammar:
     
 g = Grammar()
 #print(g.tokens)
-try:
-    g.syntaxProgram()
-except:
-    print("Missing tokens")
+
+g.syntaxProgram()
