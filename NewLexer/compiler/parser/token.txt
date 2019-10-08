@@ -9,7 +9,7 @@
 ['keywords', 'for']
 ['ID', 'i']
 ['Operator', '=']
-['decimal', '0']
+['Decimal', '0']
 ['Delimiter', ',']
 ['ID', 'i']
 ['Operator', '<']

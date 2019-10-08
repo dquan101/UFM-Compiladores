@@ -124,7 +124,7 @@ def type(listt, types):
 				pass
 			if aceptado == False:
 				if x == '0':
-					lists[0] = 'decimal'
+					lists[0] = 'Decimal'
 					lists[1] = x
 				#print("Unexpected token: ", x)
 				else:
@@ -167,16 +167,20 @@ def raw(text):
     new_string+='"'  
     return new_string
 	
-
-def tokenize(file):
+newlist_location = []
+def tokenize(file, newlist_location):
 	with open(file, 'r') as f:
+		location = 1
 		newlist = []
-		try:
+		try:	
 			for line in f:
+				newlist_location.append([line, location])
 				str = list(shlex.shlex(line))
 				newlist.extend(str)
+				location += 1
 		except ValueError:
 			print('Syntax Error. No closing quotation')
+		newlist_location = newlist
 	return newlist
 
 def accepts(transitions,initial,accepting,s):
@@ -198,7 +202,7 @@ args = vars(ap.parse_args())
 
 tofile = []
 keywords = {'keywords':['boolean', 'break', 'callout', 'class', 'continue', 'else', 'false', 'for', 'if', 'int', 'return', 'void', 'true', 'print', 'String']}
-newlist = tokenize("../"+str(args["file"]))
+newlist = tokenize("../"+str(args["file"]), newlist_location)
 #print(newlist)
 newlist = type(newlist, keywords)
 if args["debug"] == None:
@@ -224,3 +228,10 @@ for line in tofile:
 	outF.write(line)
 	outF.write("\n")
 outF.close()
+for line in newlist_location:
+	line[0] = list(shlex.shlex(line[0]))
+
+with open("location.txt", "w") as l:
+	for i in newlist_location:
+		l.write(str(i))
+		l.write('\n')
