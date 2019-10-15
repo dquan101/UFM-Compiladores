@@ -3,14 +3,19 @@ class Program
 
     int IF(int val)
     {
+        boolean val;
         return (val+1);
     }
 
-    void main()
+    void main(int x, boolean y)
     {
-        int ern3t;
+        
+        int ern3t, i, j;
         int array;
+        boolean hola;
         boolean thisfortrue;
+        hola = 10;
+        z = 1;
         array[0xa] += IF();
     }
 }

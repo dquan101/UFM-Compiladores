@@ -205,6 +205,25 @@ keywords = {'keywords':['boolean', 'break', 'callout', 'class', 'continue', 'els
 newlist = tokenize("../"+str(args["file"]), newlist_location)
 #print(newlist)
 newlist = type(newlist, keywords)
+
+signs = ['<','>','!','+','-']
+for line in newlist_location:
+	line[0] = list(shlex.shlex(line[0]))
+
+curtoken = 0
+for location in newlist_location:
+	#print(location)
+	if len(location[0]) > 0:
+		for i in range(len(location[0])):
+			#print(location[0][i])
+			if location[0][i] == "=":
+				if location[0][i-1] in signs:
+					curtoken -= 1
+			if len(newlist[curtoken]) != 3:
+				newlist[curtoken].append(location[1])
+			curtoken += 1
+			#print(curtoken)
+
 if args["debug"] == None:
 	for element in newlist:
 		if element[0] == "Unexpected token":
@@ -223,13 +242,29 @@ print(os.getcwd())
 #outF.writelines(tofile)
 #outF.close()
 
+curlocation = 0
+"""
+for i in range(len(newlist)):
+	print("old", newlist[i])
+	if newlist[i][1] in newlist_location[curlocation][0]:
+		newlist[i].append(newlist_location[curlocation][1])
+	else:
+		curlocation += 1		
+		i -= 1
+	print(newlist[i])
+"""
+
 outF = open("../parser/token.txt", "w")
 for line in tofile:
 	outF.write(line)
 	outF.write("\n")
 outF.close()
-for line in newlist_location:
-	line[0] = list(shlex.shlex(line[0]))
+
+outF = open("../semantic check/token.txt", "w")
+for line in tofile:
+	outF.write(line)
+	outF.write("\n")
+outF.close()
 
 with open("location.txt", "w") as l:
 	for i in newlist_location:

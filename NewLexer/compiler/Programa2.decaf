@@ -3,8 +3,10 @@ class Program
 
     void main()
     {
-        for i = 0, i < 25
+        int i;
+        for i = 1, i < 25
         {
+            int j;
             if(true){
                 break;
             }

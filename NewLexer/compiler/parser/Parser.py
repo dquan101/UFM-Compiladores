@@ -1,23 +1,5 @@
 from ast import literal_eval
 import sys
-"""
-bracketCheck = 0 
-with open("parser/token.txt", 'r') as f:
-    opens = ["(", "{", "["]
-    for line in f:
-        line = literal_eval(line)
-        if line[0] == "Delimiter":
-            if line[1] in opens:
-                bracketCheck += 1
-            else:
-                bracketCheck -= 1
-print(bracketCheck)
-if bracketCheck == 0:
-    print("Brackets balanceados")
-else:
-    print("Brackets no balanceados")
-"""
-
 
 class Grammar:
     def __init__(self):
@@ -35,10 +17,10 @@ class Grammar:
 
     def popToken(self):
         popped = self.tokens.pop(0)
-        #print("Popped:", popped)
+        print("Popped:", popped)
 
     def printExpectedToken(self, expected):
-        print("Expected Token: "+expected+", found ", self.tokens[0], "instead.")
+        print("Expected Token: "+expected+", found ", self.tokens[0], "instead. Near line:", (self.tokens[0][2]))
         sys.exit()
 
     def isexpected(self, token, tipo, value):
@@ -161,10 +143,11 @@ class Grammar:
             self.popToken()
             if self.isID(self.tokens[0]):
                 self.popToken()
-                if self.isexpected(self.tokens[0], "Delimiter", ","):
+                while self.isexpected(self.tokens[0], "Delimiter", ","):
                     self.popToken()
-                    self.syntaxVar_decl()
-                elif self.isexpected(self.tokens[0], "Delimiter", ";"):
+                    if self.isID(self.tokens[0]):
+                        self.popToken()
+                if self.isexpected(self.tokens[0], "Delimiter", ";"):
                     self.popToken()
                 else:
                     self.printExpectedToken("['Delimiter',';']")
