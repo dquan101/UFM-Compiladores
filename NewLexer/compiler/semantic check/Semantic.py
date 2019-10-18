@@ -1,5 +1,6 @@
 from ast import literal_eval
 import sys
+from anytree import Node, RenderTree
 
 class SymbolTable:
     def __init__(self):
@@ -129,7 +130,7 @@ def constructSymbolTable():
     scope = 0
     tokens = []
     starting_values = {'int':0, 'boolean': "false"}
-    with open("semantic check/token.txt", 'r') as f:
+    with open("token.txt", 'r') as f:
         for line in f:
             line = literal_eval(line)
             tokens.append(line)
@@ -184,3 +185,18 @@ try:
 except Exception as e:
     print(e)
     sys.exit(0)
+
+tokens = []
+with open('token.txt', 'r') as t:
+    for line in t:
+        line = literal_eval(line)
+        tokens.append(line)
+
+
+def construction(tokens):
+    parent = None
+    for i in tokens:
+        if parent == None:
+            parent = Node(i)
+            print(parent)
+construction(tokens)
