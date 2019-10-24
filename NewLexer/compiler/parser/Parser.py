@@ -334,10 +334,7 @@ class Grammar:
 
     def syntaxExpr(self, herencia=None):
         new_tree = Node('expr')                
-        if (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
-            #is method_call                       
-            self.syntaxMethod_call(new_tree)
-        elif self.isBinOp(self.tokens[1]):
+        if self.isBinOp(self.tokens[1]):
             #is expr alone
             self.popToken('expr', new_tree)
             
@@ -346,6 +343,10 @@ class Grammar:
                 self.syntaxExpr(new_tree)
             else:
                 self.printExpectedToken("<bin_op>")
+        elif (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
+            #is method_call                       
+            self.syntaxMethod_call(new_tree)
+        
         elif (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", ")")) or (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "[")):
             #is location
             print("is location")
