@@ -62,6 +62,10 @@ class SymbolTable:
                 elif symbol.type == "boolean":
                     if not symbol.value == "true" or not symbol.value == "false":
                         raise Exception ("ValueError: Variable '"+symbol.id+"' in line "+str(symbol.location))
+
+        #for pre, fill, node in RenderTree(Parser.g.final_tree):
+            #print("%s%s" % (pre, node.name))
+        #    print(node.children)
                     
 
     """
@@ -188,20 +192,9 @@ except Exception as e:
     print(e)
     sys.exit(0)
 
-tokens = []
-with open('token.txt', 'r') as t:
-    for line in t:
-        line = literal_eval(line)
-        tokens.append(line)
+#print(RenderTree(Parser.g.final_tree))
 
 
-def construction(tokens):
-    parent = None
-    for i in tokens:
-        if parent == None:
-            parent = Node(i)
-            print(parent)
-construction(tokens)
-
-
-print(RenderTree(Parser.g.final_tree))
+for pre, fill, node in RenderTree(Parser.g.final_tree):
+    #print("%s%s" % (pre, node.name))
+    print(node.name)

@@ -31,7 +31,7 @@ class Grammar:
         popped = self.tokens.pop(0)
         popped.append(nodo)
         if padre != None:
-            self.child = Node(popped[1], parent=padre)
+            self.child = Node(popped, parent=padre)
         self.tree.append(popped)
         print("Popped:", popped)
 
@@ -458,7 +458,7 @@ g = Grammar()
 #print(g.tokens)
 
 g.syntaxProgram()
-print(RenderTree(g.final_tree))
+#print(RenderTree(g.final_tree))
 
 
 for pre, fill, node in RenderTree(g.final_tree):

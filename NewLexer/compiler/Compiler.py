@@ -96,8 +96,7 @@ elif args["target"] == "semantic":
         print("debug argument not accepted for -target scan")
         print()
     else:
-        subprocess.call(["python", "Scanner.py", args["file"]], cwd="scanner")
-        subprocess.call(["python", "Parser.py", ], cwd="parser")        
+        subprocess.call(["python", "Scanner.py", args["file"]], cwd="scanner")             
         subprocess.call(["python", "Semantic.py", ], cwd="semantic check")     
         
 else:
