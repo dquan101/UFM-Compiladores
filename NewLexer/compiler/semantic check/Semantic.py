@@ -46,6 +46,11 @@ class SymbolTable:
                 #print(cadena)
             print("Scope "+str(i)+":\n"+cadena+"")
 
+    def recurse(self, node):
+        for child in node.children:
+            print(child)
+            self.recurse(child)
+
     def validateDuplicity(self):     
         #print(self.identifiers)   
         for i in range(len(self.identifiers) - 1):
@@ -54,6 +59,7 @@ class SymbolTable:
                     raise Exception("Duplicity found in idenfifier:", self.identifiers[j][1])
         
     def validateTypes(self):
+        """
         for scope in self.tree:
             for symbol in self.tree[scope]:
                 if symbol.type == "int":
@@ -62,10 +68,15 @@ class SymbolTable:
                 elif symbol.type == "boolean":
                     if not symbol.value == "true" or not symbol.value == "false":
                         raise Exception ("ValueError: Variable '"+symbol.id+"' in line "+str(symbol.location))
+        """
 
-        #for pre, fill, node in RenderTree(Parser.g.final_tree):
-            #print("%s%s" % (pre, node.name))
-        #    print(node.children)
+        for pre, fill, node in RenderTree(Parser.g.final_tree):
+            if node.name == "method_dec":
+                for child in node.children:
+                    print(child)
+                    if child.name == "location":
+                        for pre1, fill1, node1 in RenderTree(child):
+                            print("%s%s" % (pre1, node1.name))
                     
 
     """
@@ -187,7 +198,7 @@ try:
     constructSymbolTable()
     tree.showTree()
     tree.validateDuplicity()    
-    #tree.validateTypes()
+    tree.validateTypes()
 except Exception as e:
     print(e)
     sys.exit(0)
@@ -195,6 +206,6 @@ except Exception as e:
 #print(RenderTree(Parser.g.final_tree))
 
 
-for pre, fill, node in RenderTree(Parser.g.final_tree):
+#for pre, fill, node in RenderTree(Parser.g.final_tree):
     #print("%s%s" % (pre, node.name))
-    print(node.name)
+#    print(node.name)
