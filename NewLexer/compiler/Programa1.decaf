@@ -3,7 +3,7 @@ class Program
 
     int IF(int val)
     {
-        boolean val;
+        boolean b;
         return (val+1);
     }
 
@@ -12,10 +12,10 @@ class Program
         
         int ern3t, i, j;
         int array;
-        boolean hola;
+        boolean hola;   
         boolean thisfortrue;
-        hola = 10;
-        z = 1;
+        hola = 10+array+1;
+        array = 1;
         array[0xa] += IF();
     }
 }

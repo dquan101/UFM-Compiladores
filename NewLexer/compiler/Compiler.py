@@ -90,6 +90,16 @@ elif args["target"] == "parse":
     else:
         subprocess.call(["python", "Scanner.py", args["file"]], cwd="scanner")
         subprocess.call(["python", "Parser.py", ], cwd="parser")
+elif args["target"] == "semantic":
+    if args["debug"] != None:
+        print("")
+        print("debug argument not accepted for -target scan")
+        print()
+    else:
+        subprocess.call(["python", "Scanner.py", args["file"]], cwd="scanner")
+        subprocess.call(["python", "Parser.py", ], cwd="parser")        
+        subprocess.call(["python", "Semantic.py", ], cwd="semantic check")     
+        
 else:
     print("")
     print("Bad argument for flag -target")

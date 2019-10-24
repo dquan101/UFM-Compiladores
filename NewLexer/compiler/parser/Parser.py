@@ -1,6 +1,12 @@
 from ast import literal_eval
 import sys
+import pickle
 from anytree import Node, RenderTree
+from anytree.dotexport import RenderTreeGraph
+from anytree.exporter import DotExporter
+from graphviz import Source
+from graphviz import render
+from graphviz import Graph
 
 class Grammar:
     def __init__(self):
@@ -25,7 +31,7 @@ class Grammar:
         popped = self.tokens.pop(0)
         popped.append(nodo)
         if padre != None:
-            self.child = Node(popped, parent=padre)
+            self.child = Node(popped[1], parent=padre)
         self.tree.append(popped)
         print("Popped:", popped)
 
@@ -331,6 +337,15 @@ class Grammar:
         if (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "(")) or self.isexpected(self.tokens[0], "keywords", "callout"):
             #is method_call                       
             self.syntaxMethod_call(new_tree)
+        elif self.isBinOp(self.tokens[1]):
+            #is expr alone
+            self.popToken('expr', new_tree)
+            
+            if self.isBinOp(self.tokens[0]):
+                self.popToken('expr', new_tree)
+                self.syntaxExpr(new_tree)
+            else:
+                self.printExpectedToken("<bin_op>")
         elif (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", ")")) or (self.isID(self.tokens[0]) and self.isexpected(self.tokens[1], "Delimiter", "[")):
             #is location
             print("is location")
@@ -352,16 +367,7 @@ class Grammar:
             if self.isexpected(self.tokens[0], "Delimiter", ")"):
                 self.popToken('expr', new_tree)
             else:
-                self.printExpectedToken("['Delimiter',')']")
-        elif self.isBinOp(self.tokens[1]):
-            #is expr alone
-            self.popToken('expr', new_tree)
-            
-            if self.isBinOp(self.tokens[0]):
-                self.popToken('expr', new_tree)
-                self.syntaxExpr(new_tree)
-            else:
-                self.printExpectedToken("<bin_op>")
+                self.printExpectedToken("['Delimiter',')']")        
         else:
             self.printExpectedToken("<expr>")            
         new_tree.parent = herencia
@@ -452,10 +458,25 @@ g = Grammar()
 #print(g.tokens)
 
 g.syntaxProgram()
-for pre, fill, node in RenderTree(g.final_tree):
-                print("%s%s" % (pre, node.name))
-with open('../semantic check/token.txt', 'w') as nodos:
-    for i in g.tree:
-        nodos.write(str(i))
-        nodos.write('\n')
+print(RenderTree(g.final_tree))
 
+
+for pre, fill, node in RenderTree(g.final_tree):
+    print("%s%s" % (pre, node.name))
+
+
+#DotExporter(g.final_tree).to_dotfile("ast.dot")
+#Source.from_file('ast.dot')
+
+DotExporter(g.final_tree).to_dotfile('../ast/udo.dot')
+Source.from_file('../ast/udo.dot')
+render('dot', 'png', '../ast/udo.dot') 
+"""
+render('dot', 'png', 'ast.dot') 
+#RenderTreeGraph(g.final_tree).to_picture("ast.png")
+
+"""
+#dot.render(dot.render('test-output/round-table.gv', view=True)  )
+
+# graphviz needs to be installed for the next line!
+DotExporter(g.final_tree).to_picture('../ast/ast.dot')

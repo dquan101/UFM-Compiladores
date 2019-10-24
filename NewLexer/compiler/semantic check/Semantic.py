@@ -1,6 +1,8 @@
 from ast import literal_eval
 import sys
+sys.path.insert(0, '../parser/')
 from anytree import Node, RenderTree
+import Parser
 
 class SymbolTable:
     def __init__(self):
@@ -200,3 +202,6 @@ def construction(tokens):
             parent = Node(i)
             print(parent)
 construction(tokens)
+
+
+print(RenderTree(Parser.g.final_tree))
