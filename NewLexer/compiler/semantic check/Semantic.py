@@ -2,6 +2,7 @@ from ast import literal_eval
 import sys
 sys.path.insert(0, '../parser/')
 from anytree import Node, RenderTree, PostOrderIter, PreOrderIter
+import anytree
 import Parser
 
 class SymbolTable:
@@ -10,6 +11,7 @@ class SymbolTable:
         self.identifiers = []
         self.tokens = []
         self.starting_values = {'int':0, 'boolean': "false"}
+        self.final_tree = Parser.g.final_tree
         with open("token.txt", 'r') as f:
             for line in f:
                 line = literal_eval(line)
@@ -104,6 +106,13 @@ class SymbolTable:
                     return symbol.type
         return None    
 
+    def setValue(self, identifier, newvalue):
+        for scope in self.tree:
+            for symbol in self.tree[scope]:
+                if symbol.id == identifier:                    
+                    symbol.value = newvalue
+        
+
     def showTree(self):        
         for i in self.tree:
             cadena = ""
@@ -124,7 +133,7 @@ class SymbolTable:
             if type(node.name) == list:                                
                 if node.name[0] == "ID":
                     if self.LookupType(node.name[1]) != expectedType:
-                        raise Exception("Invalid type found for", expectedType, "operation")
+                        raise Exception("Invalid type found for <", expectedType, "> operation")
                     if node.parent.name == "method_call":
                         #Implementar metodo para recuperar el valor de una method call
                         pass
@@ -181,8 +190,17 @@ class SymbolTable:
         pass
         
         for pre, fill, node in RenderTree(Parser.g.final_tree):
-            if node.name == "expr":    
-                self.getExprValue(node, "int")    
+            if node.name == "statement":    
+                for child in node.children:
+                    if child.name == "expr":
+                        if anytree.util.leftsibling(child).name[0] == "Operator":
+                            op = anytree.util.leftsibling(child)
+                            destino = anytree.util.leftsibling(op)
+                            if op.name[1] == "=":
+                                
+                            elif op.name[1] == "+=":
+
+                            elif op.name[1] == "-=":
             
           
         
@@ -256,7 +274,8 @@ def validateVariable(token):
             raise Exception("SymbolError: Undeclared variable '" + token[1] + "' in line " + str(token[2]))
 """
 
-print(RenderTree(Parser.g.final_tree))
+#print(RenderTree(Parser.g.final_tree))
+print(RenderTree(tree.final_tree))
 
 try:
     tree.constructSymbolTable()
