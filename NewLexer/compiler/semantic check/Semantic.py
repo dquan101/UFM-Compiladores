@@ -1,7 +1,7 @@
 from ast import literal_eval
 import sys
 sys.path.insert(0, '../parser/')
-from anytree import Node, RenderTree
+from anytree import Node, RenderTree, PostOrderIter, PreOrderIter
 import Parser
 
 class SymbolTable:
@@ -93,9 +93,8 @@ class SymbolTable:
     def Lookup(self, identifier): #return scope number
         for scope in self.tree:
             for symbol in self.tree[scope]:
-                if symbol.id == identifier:
-                    print(symbol.id)
-                    return [scope, symbol]
+                if symbol.id == identifier:                    
+                    return [scope, symbol.value]
         return None    
 
     def showTree(self):        
@@ -110,6 +109,38 @@ class SymbolTable:
         for child in node.children:
             print(child)
             self.recurse(child)
+
+    def getExprValue(self, exprNode, expectedType):
+        operation = ""
+        for node in PostOrderIter(exprNode):
+            #print(type(node.name) == list)
+            if type(node.name) == list:                                
+                if node.name[0] == "ID":
+                    
+                    if node.parent.name == "method_call":
+                        #Implementar metodo para recuperar el valor de una method call
+                        pass
+                    else:
+                        operation += str(self.Lookup(node.name[1])[1])
+                    #operation += super(SemanticRules, self).Lookup(node.name[1])[1]
+                else:
+                    operation += node.name[1]
+            
+
+            #Falta validar los method call
+                
+        print(operation)
+
+        print("\n End of Expr \n")
+
+        """
+        valor = 0
+        for child in exprNode.children:
+            if type(child.name) != "list":
+                return 
+            else:
+                self.getExprValue(child)
+        """            
 
     def validateDuplicity(self, token):     
         #print(self.identifiers) 
@@ -127,8 +158,7 @@ class SymbolTable:
             #Validate undeclared variables
             if self.Lookup(token[1]) == None:
                 raise Exception("SymbolError: Undeclared variable", token[1], "in line", token[2])
-            
-        
+
     def validateTypes(self):
         """
         for scope in self.tree:
@@ -140,14 +170,14 @@ class SymbolTable:
                     if not symbol.value == "true" or not symbol.value == "false":
                         raise Exception ("ValueError: Variable '"+symbol.id+"' in line "+str(symbol.location))
         """
-
+        pass
+        
         for pre, fill, node in RenderTree(Parser.g.final_tree):
-            if node.name == "method_dec":
-                for child in node.children:
-                    print(child)
-                    if child.name == "location":
-                        for pre1, fill1, node1 in RenderTree(child):
-                            print("%s%s" % (pre1, node1.name))
+            if node.name == "expr":    
+                self.getExprValue(node, "int")    
+            
+          
+        
                     
 
     """
@@ -192,11 +222,17 @@ class Symbol:
             return "ID:", self.id, "| Identifier:", self.identifier1, "| Value:", self.identifier2, "| Operation:", self.op, "| Location:", self.location
 """
 class SemanticRules(SymbolTable):
-    def __init__(self):
+    def __init__(self):    
+        #SymbolTable.__init__(self)
         pass
 
     def typeCheck(self):
         pass        
+
+    
+
+    
+        
         
     
 
@@ -212,6 +248,8 @@ def validateVariable(token):
             raise Exception("SymbolError: Undeclared variable '" + token[1] + "' in line " + str(token[2]))
 """
 
+print(RenderTree(Parser.g.final_tree))
+
 try:
     tree.constructSymbolTable()
     tree.showTree()
@@ -221,7 +259,7 @@ except Exception as e:
     print(e)
     sys.exit(0)
 
-#print(RenderTree(Parser.g.final_tree))
+
 
 
 #for pre, fill, node in RenderTree(Parser.g.final_tree):
