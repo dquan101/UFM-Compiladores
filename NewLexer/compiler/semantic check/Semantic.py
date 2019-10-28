@@ -8,6 +8,65 @@ class SymbolTable:
     def __init__(self):
         self.tree = {}
         self.identifiers = []
+        self.tokens = []
+        self.starting_values = {'int':0, 'boolean': "false"}
+        with open("token.txt", 'r') as f:
+            for line in f:
+                line = literal_eval(line)
+                self.tokens.append(line)
+
+    def constructSymbolTable(self):
+        scope = 0
+        for i in range(len(self.tokens)):
+            if self.tokens[i][1] == "{" or self.tokens[i][1] == "(":
+                #print(self.tokens[i])
+                scope += 1
+                tree.PushScope(scope)
+            elif self.tokens[i][1] == ")":
+                scope -= 1
+            elif self.tokens[i][1] == "int" or self.tokens[i][1] == "boolean": 
+                #self.validateDuplicity(self.tokens[i+1])       
+                if self.tokens[i+1][0] == "ID" and self.tokens[i-1][1] == "(":
+                    #print("parameter declaration:", self.tokens[i], scope)
+                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
+                    self.validateDuplicity(self.tokens[i+1])   
+                    tree.InsertSymbol(nodo, scope)
+                    while self.tokens[i+2][0] == "Delimiter" and self.tokens[i+2][1] == ",":
+                        i += 3                
+                        #print("parameter declaration:", self.tokens[i], scope)
+                        nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
+                        #nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
+                        self.validateDuplicity(self.tokens[i+1])   
+                        tree.InsertSymbol(nodo, scope)        
+                elif self.tokens[i+1][0] == "ID" and self.tokens[i+2][1] == "(":
+                    #print("method declaration:", self.tokens[i], scope)
+                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "method")
+                    self.validateDuplicity(self.tokens[i+1])   
+                    tree.InsertSymbol(nodo, scope)
+                elif self.tokens[i+1][0] == "ID" and (self.tokens[i+2][1] == "," or self.tokens[i+2][1] == ";"):
+                    #print("var declaration:", self.tokens[i], scope)
+                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "declaration")
+                    self.validateDuplicity(self.tokens[i+1])   
+                    tree.InsertSymbol(nodo, scope)
+                    tipo = self.tokens[i][1]
+                    i += 1
+                    while self.tokens[i+1][0] == "Delimiter" and self.tokens[i+1][1] == ",":                
+                        i += 2
+                        #print("var declaration:", self.tokens[i], scope)
+                        nodo = DeclarationSymbol(tipo, self.tokens[i][1], self.starting_values[tipo], self.tokens[i][2], "declaration")
+                        self.validateDuplicity(self.tokens[i])   
+                        tree.InsertSymbol(nodo, scope)
+            elif self.tokens[i][0] == "ID":                
+                self.validateVariable(self.tokens[i])
+
+            #print("curtoken: ", self.tokens[i])
+
+            """
+            elif self.tokens[i][0] == "Operator":
+                pass
+                destino = self.tokens[i-1][1]
+                print(self.tokens[i], destino)
+            """
 
     def PushScope(self, scope):
         if type(scope) == int:    
@@ -35,7 +94,8 @@ class SymbolTable:
         for scope in self.tree:
             for symbol in self.tree[scope]:
                 if symbol.id == identifier:
-                    return scope
+                    print(symbol.id)
+                    return [scope, symbol]
         return None    
 
     def showTree(self):        
@@ -51,12 +111,23 @@ class SymbolTable:
             print(child)
             self.recurse(child)
 
-    def validateDuplicity(self):     
-        #print(self.identifiers)   
+    def validateDuplicity(self, token):     
+        #print(self.identifiers) 
+        """  
         for i in range(len(self.identifiers) - 1):
             for j in range(i+1, len(self.identifiers)):
                 if self.identifiers[i] == self.identifiers[j]:
                     raise Exception("Duplicity found in idenfifier:", self.identifiers[j][1])
+        """
+        if self.Lookup(token[1]) != None:
+            raise Exception("Duplicity found in idenfifier:", token[1], "in line", token[2])
+
+    def validateVariable(self, token):
+        if token[0] == "ID" and token[1] != "Program" and token[1] != "main" :
+            #Validate undeclared variables
+            if self.Lookup(token[1]) == None:
+                raise Exception("SymbolError: Undeclared variable", token[1], "in line", token[2])
+            
         
     def validateTypes(self):
         """
@@ -127,77 +198,24 @@ class SemanticRules(SymbolTable):
     def typeCheck(self):
         pass        
         
-    def validateVariable(self, token):
-        if token[0] == "ID" and token[1] != "Program" and token[1] != "main" :
-            #Validate undeclared variables
-            if self.Lookup(token[1]) == None:
-                raise Exception("SymbolError: Undeclared variable", token[1], "in line", token[2])
+    
 
 
 tree = SymbolTable()
 rules = SemanticRules()
 
+"""
 def validateVariable(token):
     if token[0] == "ID" and token[1] != "Program" and token[1] != "main" :
         #Validate undeclared variables
         if tree.Lookup(token[1]) == None:
             raise Exception("SymbolError: Undeclared variable '" + token[1] + "' in line " + str(token[2]))
-
-def constructSymbolTable():
-    scope = 0
-    tokens = []
-    starting_values = {'int':0, 'boolean': "false"}
-    with open("token.txt", 'r') as f:
-        for line in f:
-            line = literal_eval(line)
-            tokens.append(line)
-
-    for i in range(len(tokens)):
-        if tokens[i][1] == "{" or tokens[i][1] == "(":
-            #print(tokens[i])
-            scope += 1
-            tree.PushScope(scope)
-        elif tokens[i][1] == ")":
-            scope -= 1
-        elif tokens[i][1] == "int" or tokens[i][1] == "boolean":        
-            if tokens[i+1][0] == "ID" and tokens[i-1][1] == "(":
-                #print("parameter declaration:", tokens[i], scope)
-                nodo = DeclarationSymbol(tokens[i][1], tokens[i+1][1], starting_values[tokens[i][1]], tokens[i][2], "parameter")
-                tree.InsertSymbol(nodo, scope)
-                while tokens[i+2][0] == "Delimiter" and tokens[i+2][1] == ",":
-                    i += 3                
-                    #print("parameter declaration:", tokens[i], scope)
-                    nodo = DeclarationSymbol(tokens[i][1], tokens[i+1][1], starting_values[tokens[i][1]], tokens[i][2], "parameter")
-                    #nodo = DeclarationSymbol(tokens[i][1], tokens[i+1][1], starting_values[tokens[i][1]], tokens[i][2], "parameter")
-                    tree.InsertSymbol(nodo, scope)        
-            elif tokens[i+1][0] == "ID" and tokens[i+2][1] == "(":
-                #print("method declaration:", tokens[i], scope)
-                nodo = DeclarationSymbol(tokens[i][1], tokens[i+1][1], starting_values[tokens[i][1]], tokens[i][2], "method")
-                tree.InsertSymbol(nodo, scope)
-            elif tokens[i+1][0] == "ID" and (tokens[i+2][1] == "," or tokens[i+2][1] == ";"):
-                #print("var declaration:", tokens[i], scope)
-                nodo = DeclarationSymbol(tokens[i][1], tokens[i+1][1], starting_values[tokens[i][1]], tokens[i][2], "declaration")
-                tree.InsertSymbol(nodo, scope)
-                tipo = tokens[i][1]
-                i += 1
-                while tokens[i+1][0] == "Delimiter" and tokens[i+1][1] == ",":                
-                    i += 2
-                    #print("var declaration:", tokens[i], scope)
-                    nodo = DeclarationSymbol(tipo, tokens[i][1], starting_values[tipo], tokens[i][2], "declaration")
-                    tree.InsertSymbol(nodo, scope)
-        elif tokens[i][0] == "ID":
-            validateVariable(tokens[i])
-        #print("curtoken: ", tokens[i])
-        elif tokens[i][0] == "Operator":
-            pass
-            destino = tokens[i-1][1]
-            print(tokens[i], destino)
-
+"""
 
 try:
-    constructSymbolTable()
+    tree.constructSymbolTable()
     tree.showTree()
-    tree.validateDuplicity()    
+    #tree.validateDuplicity()    
     tree.validateTypes()
 except Exception as e:
     print(e)
