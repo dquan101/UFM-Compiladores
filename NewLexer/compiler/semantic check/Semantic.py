@@ -97,6 +97,13 @@ class SymbolTable:
                     return [scope, symbol.value]
         return None    
 
+    def LookupType(self, identifier):
+        for scope in self.tree:
+            for symbol in self.tree[scope]:
+                if symbol.id == identifier:                    
+                    return symbol.type
+        return None    
+
     def showTree(self):        
         for i in self.tree:
             cadena = ""
@@ -110,13 +117,14 @@ class SymbolTable:
             print(child)
             self.recurse(child)
 
-    def getExprValue(self, exprNode, expectedType):
+    def getExprValue(self, exprNode, expectedType = None):
         operation = ""
         for node in PostOrderIter(exprNode):
             #print(type(node.name) == list)
             if type(node.name) == list:                                
                 if node.name[0] == "ID":
-                    
+                    if self.LookupType(node.name[1]) != expectedType:
+                        raise Exception("Invalid type found for", expectedType, "operation")
                     if node.parent.name == "method_call":
                         #Implementar metodo para recuperar el valor de una method call
                         pass
