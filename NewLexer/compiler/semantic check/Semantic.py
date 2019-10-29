@@ -30,34 +30,47 @@ class SymbolTable:
                 #self.validateDuplicity(self.tokens[i+1])       
                 if self.tokens[i+1][0] == "ID" and self.tokens[i-1][1] == "(":
                     #print("parameter declaration:", self.tokens[i], scope)
-                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
+                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter", False)
                     self.validateDuplicity(self.tokens[i+1])   
                     tree.InsertSymbol(nodo, scope)
                     while self.tokens[i+2][0] == "Delimiter" and self.tokens[i+2][1] == ",":
                         i += 3                
                         #print("parameter declaration:", self.tokens[i], scope)
-                        nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
+                        nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter", False)
                         #nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], starting_values[self.tokens[i][1]], self.tokens[i][2], "parameter")
                         self.validateDuplicity(self.tokens[i+1])   
                         tree.InsertSymbol(nodo, scope)        
                 elif self.tokens[i+1][0] == "ID" and self.tokens[i+2][1] == "(":
                     #print("method declaration:", self.tokens[i], scope)
-                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "method")
+                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "method", False)
                     self.validateDuplicity(self.tokens[i+1])   
                     tree.InsertSymbol(nodo, scope)
-                elif self.tokens[i+1][0] == "ID" and (self.tokens[i+2][1] == "," or self.tokens[i+2][1] == ";"):
+                elif self.tokens[i+1][0] == "ID" and (self.tokens[i+2][1] == "," or self.tokens[i+2][1] == ";" or self.tokens[i+2][1] == "["):
                     #print("var declaration:", self.tokens[i], scope)
-                    nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "declaration")
+                    diferencia = 0 #diferencia de tokens entre una declaracion de un array y de una variable global
+                    if self.tokens[i+2][1] == "[":
+                        nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "declaration", True, self.tokens[i+3][1])   
+                        diferencia = 3
+                    else:
+                        nodo = DeclarationSymbol(self.tokens[i][1], self.tokens[i+1][1], self.starting_values[self.tokens[i][1]], self.tokens[i][2], "declaration", False)
+                        diferencia = 0
                     self.validateDuplicity(self.tokens[i+1])   
                     tree.InsertSymbol(nodo, scope)
                     tipo = self.tokens[i][1]
-                    i += 1
-                    while self.tokens[i+1][0] == "Delimiter" and self.tokens[i+1][1] == ",":                
-                        i += 2
+                    i += 1 #Esto setea el contador sobre el token que tiene el ID
+                    while self.tokens[i+1+diferencia][0] == "Delimiter" and self.tokens[i+1][1] == ",":                
+                        i += (2 + diferencia) #Setea el contador a la altura del ID despues de una coma en una declaracion multiple.
                         #print("var declaration:", self.tokens[i], scope)
-                        nodo = DeclarationSymbol(tipo, self.tokens[i][1], self.starting_values[tipo], self.tokens[i][2], "declaration")
+                        if self.tokens[i+2][1] == "[":
+                            nodo = DeclarationSymbol(tipo, self.tokens[i][1], self.starting_values[tipo], self.tokens[i][2], "declaration", True, self.tokens[i+2][1])   
+                            diferencia = 3
+                        else:
+                            nodo = DeclarationSymbol(tipo, self.tokens[i][1], self.starting_values[tipo], self.tokens[i][2], "declaration", False)
+                            diferencia = 0
+                        #nodo = DeclarationSymbol(tipo, self.tokens[i][1], self.starting_values[tipo], self.tokens[i][2], "declaration", False)
                         self.validateDuplicity(self.tokens[i])   
                         tree.InsertSymbol(nodo, scope)
+                
             elif self.tokens[i][0] == "ID":                
                 self.validateVariable(self.tokens[i])
 
@@ -121,19 +134,15 @@ class SymbolTable:
                 #print(cadena)
             print("Scope "+str(i)+":\n"+cadena+"")
 
-    def recurse(self, node):
-        for child in node.children:
-            print(child)
-            self.recurse(child)
-
     def getExprValue(self, exprNode, expectedType = None):
         operation = ""
+        operators = ['+','-','*','%',"(",")"]
         for node in PostOrderIter(exprNode):
             #print(type(node.name) == list)
             if type(node.name) == list:                                
                 if node.name[0] == "ID":
                     if self.LookupType(node.name[1]) != expectedType:
-                        raise Exception("Invalid type found for <", expectedType, "> operation")
+                        raise Exception("Invalid type found for", expectedType, "operation")
                     if node.parent.name == "method_call":
                         #Implementar metodo para recuperar el valor de una method call
                         pass
@@ -141,8 +150,18 @@ class SymbolTable:
                         operation += str(self.Lookup(node.name[1])[1])
                     #operation += super(SemanticRules, self).Lookup(node.name[1])[1]
                 else:
-                    operation += node.name[1]
-            
+                    #print(node.name)
+                    if expectedType == "int":
+                        if node.name[1].isnumeric() or node.name[1] in operators:
+                            operation += node.name[1]
+                        else:
+                            raise Exception("Invalid type found for <", expectedType, "> operation")
+                    elif expectedType == "boolean":
+                        if not node.name[1].isnumeric():
+                            operation += node.name[1]
+                        else:
+                            raise Exception("Invalid type found for <", expectedType, "> operation")
+                            
 
             #Falta validar los method call
                 
@@ -159,6 +178,7 @@ class SymbolTable:
                 self.getExprValue(child)
         """            
 
+    #Called during ConstructSymbolTable
     def validateDuplicity(self, token):     
         #print(self.identifiers) 
         """  
@@ -170,6 +190,7 @@ class SymbolTable:
         if self.Lookup(token[1]) != None:
             raise Exception("Duplicity found in idenfifier:", token[1], "in line", token[2])
 
+    #Called during ConstructSymbolTable
     def validateVariable(self, token):
         if token[0] == "ID" and token[1] != "Program" and token[1] != "main" :
             #Validate undeclared variables
@@ -195,13 +216,15 @@ class SymbolTable:
                     if child.name == "expr":
                         if anytree.util.leftsibling(child).name[0] == "Operator":
                             op = anytree.util.leftsibling(child)
-                            destino = anytree.util.leftsibling(op)
+                            destino = anytree.util.leftsibling(op).children[0]
+                            print(destino)
                             if op.name[1] == "=":
-                                
+                                print(destino, "Expr value:", self.getExprValue(child, self.LookupType(destino.name[1])))
+                                #self.setValue(destino.name[1], self.getExprValue(child, self.LookupType(destino.name[1])))
                             elif op.name[1] == "+=":
-
+                                pass
                             elif op.name[1] == "-=":
-            
+                                pass
           
         
                     
@@ -216,12 +239,17 @@ class SymbolTable:
     """
         
 class DeclarationSymbol:
-    def __init__(self, tipo, id, value, location, op):
+    def __init__(self, tipo, id, value, location, op, isarray, arraysize = None):
         self.id = id        
         self.type = tipo
         self.value = value
         self.location = location
         self.op = op
+        self.isarray = isarray
+        self.arraysize = arraysize
+        if arraysize != None and isarray == False:
+            raise Exception("There can only be array size when declaring an array.")
+            
 
 
     def toString(self):
@@ -229,7 +257,7 @@ class DeclarationSymbol:
         #    return "ID:", self.id, "| Valor:", self.value, "| Tipo:", self.type, "| Operation:", self.op, "| Location:", self.location
         #elif self.op == "method":
         #    return "ID:", self.id, "| Valor:", self.value, "| Tipo:", self.type, "| Operation:", self.op, "| Location:", self.location
-        return "ID:", self.id, "| Valor:", self.value, "| Tipo:", self.type, "| Operation:", self.op, "| Location:", self.location
+        return "ID:", self.id, "| Valor:", self.value, "| Tipo:", self.type, "| Operation:", self.op, "| Location:", self.location, "| isArray:", self.isarray, "| ArraySize:", self.arraysize
 
 """
 class Symbol:
