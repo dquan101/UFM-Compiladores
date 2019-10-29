@@ -225,6 +225,20 @@ class SymbolTable:
                                 pass
                             elif op.name[1] == "-=":
                                 pass
+            elif node.name == "method_dec":
+                for hijo in node.children:
+                    if hijo.name[1] == "main":
+                        if len(node.children) != 5:
+                            raise Exception('ParameterError: Main takes no arguments!')
+            
+            elif node.name[1] == 'continue' or node.name[1] == 'break':
+                viejos = []
+                for i in node.ancestors:
+                    if i.name == 'statement':
+                        for j in i.children:
+                            viejos.append(j.name[1])
+                if 'for' not in viejos:
+                    raise SyntaxError('SyntaxError: BREAK or CONTINUE not in FOR statement')
           
         
                     
