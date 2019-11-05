@@ -98,7 +98,7 @@ def type(listt, types):
 				if accepts(OFA, 0, {1}, x):
 					if listt[y+1] == '=':
 						x = x + '='
-					if listt[y-1] in ('-', '+', '<', '>'):
+					if listt[y-1] in ('-', '+', '<', '>', '='):
 						pass
 					else:
 						lists[0] = 'Operator'
@@ -206,7 +206,7 @@ newlist = tokenize("../"+str(args["file"]), newlist_location)
 #print(newlist)
 newlist = type(newlist, keywords)
 
-signs = ['<','>','!','+','-']
+signs = ['<','>','!','+','-','=']
 for line in newlist_location:
 	line[0] = list(shlex.shlex(line[0]))
 
@@ -261,6 +261,12 @@ for line in tofile:
 outF.close()
 
 outF = open("../semantic check/token.txt", "w")
+for line in tofile:
+	outF.write(line)
+	outF.write("\n")
+outF.close()
+
+outF = open("../irt/token.txt", "w")
 for line in tofile:
 	outF.write(line)
 	outF.write("\n")

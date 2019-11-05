@@ -4,9 +4,10 @@ import pickle
 from anytree import Node, RenderTree
 from anytree.dotexport import RenderTreeGraph
 from anytree.exporter import DotExporter
-from graphviz import Source
+import anytree
+'''from graphviz import Source
 from graphviz import render
-from graphviz import Graph
+from graphviz import Graph'''
 
 class Grammar:
     def __init__(self):
@@ -469,7 +470,7 @@ for pre, fill, node in RenderTree(g.final_tree):
 #DotExporter(g.final_tree).to_dotfile("ast.dot")
 #Source.from_file('ast.dot')
 
-DotExporter(g.final_tree).to_dotfile('../ast/udo.dot')
+'''DotExporter(g.final_tree).to_dotfile('../ast/udo.dot')
 Source.from_file('../ast/udo.dot')
 render('dot', 'png', '../ast/udo.dot') 
 """
@@ -480,4 +481,6 @@ render('dot', 'png', 'ast.dot')
 #dot.render(dot.render('test-output/round-table.gv', view=True)  )
 
 # graphviz needs to be installed for the next line!
-DotExporter(g.final_tree).to_picture('../ast/ast.dot')
+DotExporter(g.final_tree).to_picture('../ast/ast.dot')'''
+
+

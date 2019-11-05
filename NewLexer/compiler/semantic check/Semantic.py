@@ -161,6 +161,7 @@ class SymbolTable:
                             operation += node.name[1]
                         else:
                             raise Exception("Invalid type found for <", expectedType, "> operation")
+                
                             
 
             #Falta validar los method call
@@ -323,7 +324,7 @@ try:
     tree.constructSymbolTable()
     tree.showTree()
     #tree.validateDuplicity()    
-    tree.validateTypes()
+    #tree.validateTypes()
 except Exception as e:
     print(e)
     sys.exit(0)
@@ -334,3 +335,4 @@ except Exception as e:
 #for pre, fill, node in RenderTree(Parser.g.final_tree):
     #print("%s%s" % (pre, node.name))
 #    print(node.name)
+
