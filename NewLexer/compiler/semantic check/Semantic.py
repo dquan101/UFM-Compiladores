@@ -318,7 +318,7 @@ def validateVariable(token):
 """
 
 #print(RenderTree(Parser.g.final_tree))
-print(RenderTree(tree.final_tree))
+#print(RenderTree(tree.final_tree))
 
 try:
     tree.constructSymbolTable()

@@ -122,17 +122,19 @@ tf = []
 instructions = []
 for_labels = []
 for_label_counter = 0
-else_labels = ['else']
+else_labels = []
 else_label_counter = 0
+block_index = None
+post = [node for node in PostOrderIter(Parser.g.final_tree)]
 program_lines = Parser.g.final_tree.root.children[-1].name[2]
 for line in range(program_lines):
     l = [False, line+1]
     tf.append(l)
 
-for i in PostOrderIter(Parser.g.final_tree):
-    if i.name == 'var_decl':
+for i in range(len(post)):
+    if post[i].name == 'var_decl':
         ID = None
-        for j in i.children:
+        for j in post[i].children:
             if j.name[0] == 'keywords':
                 keyword = j.name[1]
                 
@@ -145,85 +147,126 @@ for i in PostOrderIter(Parser.g.final_tree):
             else:
                 RAM[ID] = [mem_pos, 4]
 
-    '''if i.name[1] == 'for':
-        var1 = i.parent.children[1].name[1]
-        var2 = literal_eval(getExprValue(i.parent.children[3], 'int'))
-        var3 = i.parent.children[5].children[0].name[1]
-        var4 = literal_eval(getExprValue(i.parent.children[5].children[2], 'int'))
+    '''if post[i].name[1] == 'for':
+        var1 = post[i].parent.children[1].name[1]
+        var2 = literal_eval(getExprValue(post[i].parent.children[3], 'int'))
+        var3 = post[i].parent.children[5].children[0].name[1]
+        var4 = literal_eval(getExprValue(post[i].parent.children[5].children[2], 'int'))
 
-        if i.parent.children[5].children[1].name[1] == '<':
+        if post[i].parent.children[5].children[1].name[1] == '<':
             inst.insert(pseudo_branch('bl', var3, var4, 'label'))
-            tf[i.parent.children[5].children[1].name[2]-1][0] = True
+            tf[post[i].parent.children[5].children[1].name[2]-1][0] = True
 
-        if i.parent.children[5].children[1].name[1] == '>':
+        if post[i].parent.children[5].children[1].name[1] == '>':
             inst.insert(pseudo_branch('bg', var3, var4, 'label'))
-            tf[i.parent.children[5].children[1].name[2]-1][0] = True
+            tf[post[i].parent.children[5].children[1].name[2]-1][0] = True
 
-        if i.parent.children[5].children[1].name[1] == '>=':
+        if post[i].parent.children[5].children[1].name[1] == '>=':
             inst.insert(pseudo_branch('bge', var3, var4, 'label'))
-            tf[i.parent.children[5].children[1].name[2]-1][0] = True
+            tf[post[i].parent.children[5].children[1].name[2]-1][0] = True
 
-        if i.parent.children[5].children[1].name[1] == '<=':
+        if post[i].parent.children[5].children[1].name[1] == '<=':
             inst.insert(pseudo_branch('ble', var3, var4, 'label'))
-            tf[i.parent.children[5].children[1].name[2]-1][0] = True
+            tf[post[i].parent.children[5].children[1].name[2]-1][0] = True
 
         inst.insert(pseudo_load_store('load', var1, var2))'''
     
-    if i.name[1] == 'for':
+    if post[i].name[1] == 'for':
         instructions.append(pseudo_create_label('label', 'for'+str(for_label_counter)))
         for_labels.append('for'+str(for_label_counter))
         for_label_counter += 1
 
-    if i.name[1] == '<':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
-        instructions.append(pseudo_branch('bl', var1, var2, for_labels[0]))
-
-    if i.name[1] == '<=':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
-        instructions.append(pseudo_branch('ble', var1, var2, for_labels[0]))
-
-    if i.name[1] == '>':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
+    if post[i].name[1] == '<':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('bg', var1, var2, for_labels[0]))
-        
-    if i.name[1] == '>=':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
+
+    if post[i].name[1] == '<=':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('bge', var1, var2, for_labels[0]))
 
-    if i.name[1] == '=':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
+    if post[i].name[1] == '>':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        instructions.append(pseudo_branch('bl', var1, var2, for_labels[0]))
+        
+    if post[i].name[1] == '>=':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        instructions.append(pseudo_branch('ble', var1, var2, for_labels[0]))
+
+    if post[i].name[1] == '=':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_load_store('load', var1, var2))
 
-    if i.name[1] == '+=':
-        var1 = leftsibling(i).children[0].name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
+    if post[i].name[1] == '+=':
+        var1 = leftsibling(post[i]).children[0].name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('add', var1, var2))
     
-    if i.name[1] == '-=':
-        var1 = leftsibling(i).children[0].name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
+    if post[i].name[1] == '-=':
+        var1 = leftsibling(post[i]).children[0].name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('sub', var1, var2))
     
-    if i.name[1] == '==':
-        var1 = leftsibling(i).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(i), 'int'))
-        instructions.append(pseudo_branch('be', var1, var2, 'else'+str(else_label_counter)))
+    if post[i].name[1] == '==':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        if len(else_labels) == 0:
+            label = 'endif'
+        else:
+            label = else_labels[0]
+        instructions.append(pseudo_branch('bne', var1, var2, label))
 
-    if i.name[1] == 'else':
+    if post[i].name[1] == '!=':
+        var1 = leftsibling(post[i]).name[1]
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        if len(else_labels) == 0:
+            label = 'endif'
+        else:
+            label = else_labels[0]
+        instructions.append(pseudo_branch('be', var1, var2, label))
+
+    if post[i].name[1] == 'else':
         instructions.append(pseudo_create_label('label', 'else'+str(else_label_counter)))
-        instructions.append()
     
-    if i.name[1] == '}':
-        if i.ancestors
+    if post[i].name[1] == '||':
+        var1 = literal_eval(getExprValue(leftsibling(post[i]), 'int'))
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        instructions.append(pseudo_arith_logic('or', var1, var2))
 
+    if post[i].name[1] == '&&':
+        var1 = literal_eval(getExprValue(leftsibling(post[i]), 'int'))
+        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        instructions.append(pseudo_arith_logic('and', var1, var2))
+    
+    if post[i].name[1] == 'for':
+        for_index = i
+        if block_index != None:
+            print(post[block_index].name[1])
+    
+    if post[i].name == 'block':
+        for x in post[i].siblings:
+            if x.name[1] == 'for':
+                block_index = i
+                for g in post[block_index].children:
+                    if g.name[1] == '}':
+                        instructions.append(pseudo_jump('j', 'for_label'))
+                        instructions.append(pseudo_create_label('label', 'endfor'))
+            elif x.name[1] == 'if':
+                for g in post[i].children:
+                    if g.name[1] == '}':
+                        instructions.append(pseudo_create_label('label', 'endif'))
+    
+    if post[i].name[1] == 'break':
+        instructions.append(pseudo_jump('j', 'endfor_label'))
+    
 for g in range(len(instructions)-1, -1, -1):
     inst.insert(instructions[g])
 
 inst.iterate()
-print(RAM)
+'''for i in post:
+    print(i.name)'''
                 

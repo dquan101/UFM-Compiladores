@@ -34,7 +34,7 @@ class Grammar:
         if padre != None:
             self.child = Node(popped, parent=padre)
         self.tree.append(popped)
-        print("Popped:", popped)
+        #print("Popped:", popped)
 
     def printExpectedToken(self, expected):
         print("Expected Token: "+expected+", found ", self.tokens[0], "instead. Near line:", (self.tokens[0][2]))
@@ -463,8 +463,8 @@ g.syntaxProgram()
 #print(RenderTree(g.final_tree))
 
 
-for pre, fill, node in RenderTree(g.final_tree):
-    print("%s%s" % (pre, node.name))
+'''for pre, fill, node in RenderTree(g.final_tree):
+    print("%s%s" % (pre, node.name))'''
 
 
 #DotExporter(g.final_tree).to_dotfile("ast.dot")
