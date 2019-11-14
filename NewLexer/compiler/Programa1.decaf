@@ -7,15 +7,15 @@ class Program
         return (val+1);
     }
 
-    void main(int x, boolean y)
+    void main()
     {
         
         int ern3t, i, j;
         int array;
-        boolean hola;   
+        int hola;   
         boolean thisfortrue;
-        hola = 10+array+1;
         array = 1;
-        array[0xa] += IF();
+        hola = 10;
+
     }
 }

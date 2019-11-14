@@ -332,7 +332,6 @@ except Exception as e:
 
 
 
-#for pre, fill, node in RenderTree(Parser.g.final_tree):
-    #print("%s%s" % (pre, node.name))
+for pre, fill, node in RenderTree(Parser.g.final_tree):
+    print("%s%s" % (pre, node.name))
 #    print(node.name)
-

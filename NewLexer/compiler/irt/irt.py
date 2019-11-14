@@ -1,4 +1,4 @@
-from ast import literal_eval
+#from ast import eval
 import sys
 sys.path.insert(0, '../parser/')
 import anytree
@@ -125,7 +125,7 @@ for_label_counter = 0
 else_labels = []
 else_label_counter = 0
 block_index = None
-post = [node for node in PostOrderIter(Parser.g.final_tree)]
+post = [node for node in PreOrderIter(Parser.g.final_tree)]
 program_lines = Parser.g.final_tree.root.children[-1].name[2]
 for line in range(program_lines):
     l = [False, line+1]
@@ -137,7 +137,6 @@ for i in range(len(post)):
         for j in post[i].children:
             if j.name[0] == 'keywords':
                 keyword = j.name[1]
-                
             if j.name[0] == 'ID':
                 ID = j.name[1]
                 mem_pos += 4
@@ -146,6 +145,12 @@ for i in range(len(post)):
                 pass
             else:
                 RAM[ID] = [mem_pos, 4]
+    if post[i].name =='method_dec':
+        instructions.append(pseudo_create_label('label_function', post[i].children[1].name[1]))
+        for p in post[i].children[3:]:
+            
+    
+
 
     '''if post[i].name[1] == 'for':
         var1 = post[i].parent.children[1].name[1]
@@ -178,42 +183,45 @@ for i in range(len(post)):
 
     if post[i].name[1] == '<':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('bg', var1, var2, for_labels[0]))
 
     if post[i].name[1] == '<=':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('bge', var1, var2, for_labels[0]))
 
     if post[i].name[1] == '>':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('bl', var1, var2, for_labels[0]))
         
     if post[i].name[1] == '>=':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_branch('ble', var1, var2, for_labels[0]))
 
     if post[i].name[1] == '=':
-        var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        if leftsibling(post[i]).name == 'location':
+            var1 = leftsibling(post[i]).children[0].name[1]
+        else :
+            var1 = leftsibling(post[i]).name[1]
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_load_store('load', var1, var2))
 
     if post[i].name[1] == '+=':
         var1 = leftsibling(post[i]).children[0].name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('add', var1, var2))
     
     if post[i].name[1] == '-=':
         var1 = leftsibling(post[i]).children[0].name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('sub', var1, var2))
     
     if post[i].name[1] == '==':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         if len(else_labels) == 0:
             label = 'endif'
         else:
@@ -222,7 +230,7 @@ for i in range(len(post)):
 
     if post[i].name[1] == '!=':
         var1 = leftsibling(post[i]).name[1]
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         if len(else_labels) == 0:
             label = 'endif'
         else:
@@ -233,13 +241,13 @@ for i in range(len(post)):
         instructions.append(pseudo_create_label('label', 'else'+str(else_label_counter)))
     
     if post[i].name[1] == '||':
-        var1 = literal_eval(getExprValue(leftsibling(post[i]), 'int'))
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var1 = eval(getExprValue(leftsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('or', var1, var2))
 
     if post[i].name[1] == '&&':
-        var1 = literal_eval(getExprValue(leftsibling(post[i]), 'int'))
-        var2 = literal_eval(getExprValue(rightsibling(post[i]), 'int'))
+        var1 = eval(getExprValue(leftsibling(post[i]), 'int'))
+        var2 = eval(getExprValue(rightsibling(post[i]), 'int'))
         instructions.append(pseudo_arith_logic('and', var1, var2))
     
     if post[i].name[1] == 'for':
@@ -262,6 +270,9 @@ for i in range(len(post)):
     
     if post[i].name[1] == 'break':
         instructions.append(pseudo_jump('j', 'endfor_label'))
+
+    if post[i].name[1] == 'return':
+        instructions.append(pseudo_jump('j', 'ra'))
     
 for g in range(len(instructions)-1, -1, -1):
     inst.insert(instructions[g])
@@ -269,4 +280,3 @@ for g in range(len(instructions)-1, -1, -1):
 inst.iterate()
 '''for i in post:
     print(i.name)'''
-                
